@@ -3,7 +3,7 @@ name = "napalm-opengear-ng"
 version = "0.1.0"
 description = "NAPALM driver for Opengear CM81xx"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 dependencies = [
     "napalm>=5.1.0",
 ]
