@@ -230,11 +230,17 @@ class OpengearNGDriver(NetworkDriver):
             )
         return True
 
-    def load_merge_candidate(self, filename=None, config=None):
-        return self._load_candidate("merge", filename=filename, config=config)
+    def load_merge_candidate(self, filename=None, config=None, **kwargs):
+        if kwargs.pop("test"):
+            return self.compare_config(filename=filename, config=config)
+        return self._load_candidate("merge", filename=filename, config=config, **kwargs)
 
-    def load_replace_candidate(self, filename=None, config=None):
-        return self._load_candidate("replace", filename=filename, config=config)
+    def load_replace_candidate(self, filename=None, config=None, **kwargs):
+        if kwargs.pop("test"):
+            return self.compare_config(filename=filename, config=config)
+        return self._load_candidate(
+            "replace", filename=filename, config=config, **kwargs
+        )
 
     def compare_config(self, filename=None, config=None):
         config_file = self._load_config(filename=filename, config=config)
