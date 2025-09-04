@@ -1,6 +1,7 @@
 """NAPALM driver for Opengear CM81xx"""
 
 import socket
+import string
 import tempfile
 from collections import defaultdict
 
@@ -52,7 +53,9 @@ class OpengearNGDriver(NetworkDriver):
     def close(self):
         if self.loaded:
             # cleanup candidate and backup files, ignore errors
-            self.device.send_command("rm -rf /var/tmp/candidate-napalm.sh /var/tmp/backup-napalm.sh || true")
+            self.device.send_command(
+                "rm -rf /var/tmp/candidate-napalm.sh /var/tmp/backup-napalm.sh || true"
+            )
         self._netmiko_close()
 
     def is_alive(self):
@@ -216,9 +219,7 @@ class OpengearNGDriver(NetworkDriver):
         if not config_file or not self.loaded:
             raise MergeConfigException("Failed to load candidate configuration.")
 
-        backup = self.device.send_command(
-            "ogcli export /var/tmp/backup-napalm.sh"
-        )
+        backup = self.device.send_command("ogcli export /var/tmp/backup-napalm.sh")
         if backup.strip() != "":
             raise CommandErrorException(f"Could not backup configuration:\n{backup}")
 
@@ -227,9 +228,14 @@ class OpengearNGDriver(NetworkDriver):
             read_timeout=60,
         )
 
-        # for now a bit dirty but we make sure that the last line says "import successful"
-        lines = apply_config.strip().splitlines()
-        if "import successful" not in lines[-1]:
+        ok_char = string.printable
+        # When the device is importing a config, it spits a message everys seconds, filtering them out (also empty lines)
+        output = [
+            line
+            for line in apply_config.splitlines()
+            if line.strip() and line[0] not in ok_char
+        ]
+        if not any("import successful" in line for line in output):
             raise MergeConfigException(
                 f"Could not merge configuration:\n{apply_config}"
             )
