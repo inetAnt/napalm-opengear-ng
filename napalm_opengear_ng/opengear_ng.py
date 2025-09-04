@@ -50,6 +50,9 @@ class OpengearNGDriver(NetworkDriver):
             self.device.enable()
 
     def close(self):
+        if self.loaded:
+            # cleanup candidate and backup files, ignore errors
+            self.device.send_command("rm -rf /var/tmp/candidate-napalm.sh /var/tmp/backup-napalm.sh || true")
         self._netmiko_close()
 
     def is_alive(self):
@@ -186,7 +189,7 @@ class OpengearNGDriver(NetworkDriver):
         transfer = FileTransfer(
             ssh_conn=self.device,
             source_file=filename,
-            dest_file="candidate.sh",
+            dest_file="candidate-napalm.sh",
         )
         try:
             transfer.establish_scp_conn()
@@ -213,7 +216,9 @@ class OpengearNGDriver(NetworkDriver):
         if not config_file or not self.loaded:
             raise MergeConfigException("Failed to load candidate configuration.")
 
-        backup = self.device.send_command("ogcli export /var/tmp/config-napalm.sh")
+        backup = self.device.send_command(
+            "ogcli export /var/tmp/backup-napalm.sh"
+        )
         if backup.strip() != "":
             raise CommandErrorException(f"Could not backup configuration:\n{backup}")
 
