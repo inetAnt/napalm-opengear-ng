@@ -49,6 +49,9 @@ class OpengearNGDriver(NetworkDriver):
         if self.username != "root":
             self.device.enable()
 
+    def close(self):
+        self._netmiko_close()
+
     def is_alive(self):
         null = chr(0)
         if self.device is None:
