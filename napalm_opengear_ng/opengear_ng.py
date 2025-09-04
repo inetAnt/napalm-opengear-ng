@@ -233,7 +233,7 @@ class OpengearNGDriver(NetworkDriver):
         output = [
             line
             for line in apply_config.splitlines()
-            if line.strip() and line[0] not in ok_char
+            if line.strip() and line[0] in ok_char
         ]
         if not any("import successful" in line for line in output):
             raise MergeConfigException(
