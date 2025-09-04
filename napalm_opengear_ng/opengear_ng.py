@@ -248,7 +248,9 @@ class OpengearNGDriver(NetworkDriver):
         if not config_file or not self.loaded:
             raise MergeConfigException("Failed to load candidate configuration.")
 
-        compare_config = self.device.send_command(f"ogcli diff {config_file}").strip()
+        compare_config = self.device.send_command(
+            f"ogcli diff {config_file}", read_timeout=60
+        ).strip()
 
         if "was an error" in compare_config:
             raise MergeConfigException(
